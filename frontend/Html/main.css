@@ -1,0 +1,31 @@
+@import url(https://fonts.googleapis.com/css?family=Pacifico);
+html {
+  font-family: "Pacifico";
+}
+
+body {
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  /* width: 100%;
+  height: 100vh; */
+  overflow: hidden;
+  background-color: #000;
+      display: flex
+;
+    align-items: center;
+    justify-content: flex-end;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* h1 {
+  position: fixed;
+  color: #ff0;
+  font-size: 3rem;
+} */
