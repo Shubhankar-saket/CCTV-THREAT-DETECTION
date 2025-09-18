@@ -51,7 +51,7 @@ class YOLOv8ThreatDetector:
 
     def __init__(
         self,
-        weapon_model_path="C:\\Users\\shubh\\runs\\detect\\train14\\weights\\best.pt",
+        weapon_model_path="best.pt",
         pose_model_name="yolov8n-pose.pt",
         conf_thr=0.4,
         device=None,
