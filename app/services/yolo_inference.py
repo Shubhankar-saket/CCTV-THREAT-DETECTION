@@ -1,4 +1,4 @@
-# pose_intent_threat_detector_v4.py
+# pose_intent_threat_detector_v5.py
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -51,7 +51,7 @@ class YOLOv8ThreatDetector:
 
     def __init__(
         self,
-        weapon_model_path="best.pt",
+        weapon_model_path="C:\\Users\\shubh\\runs\\detect\\train19\\weights\\best.pt",
         pose_model_name="yolov8n-pose.pt",
         conf_thr=0.4,
         device=None,
@@ -64,7 +64,8 @@ class YOLOv8ThreatDetector:
         self.last_alert_time = 0
         self.cooldown_seconds = 5
 
-        self.THREAT_CLASSES = {"knife", "gun", "fire", "explosion", "weapon"}
+        # updated threat classes from your model
+        self.THREAT_CLASSES = {"handgun", "short_rifle", "knife"}
         self.PERSON_CLASS = "person"
 
         self.consistency_frames = 3
