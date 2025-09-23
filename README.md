@@ -1,4 +1,4 @@
-# CCTV Threat Detection
+# Vigilens
 
 A computer-vision system for **real-time CCTV threat detection** using YOLOv8.  
 Detects suspicious objects/activities (weapons, fights, intrusions, falls, etc.), provides simple pose estimation support, and exposes a lightweight web dashboard for live monitoring.
@@ -14,9 +14,7 @@ Detects suspicious objects/activities (weapons, fights, intrusions, falls, etc.)
 - [Project structure](#project-structure) 
 - [Development notes](#development-notes)  
 - [Contributing](#contributing)  
-- [License](#license)  
-- [Contact](#contact)  
-- [Roadmap](#roadmap)
+- [Contact](#contact) 
 
 ---
 
@@ -90,7 +88,11 @@ Primary dependencies (also provided in `requirements.txt`):
 
 > [!IMPORTANT]
 > Add CONTRIBUTING.md if you plan to accept external contributions.
+---
 
+## Contact
++ For questions or help: open an issue on GitHub
+---
 
 
 
