@@ -5,7 +5,7 @@ import numpy as np
 from datetime import datetime
 import time
 from collections import deque
-from app.utils.email_alert import send_telegram_alert
+from utils.email_alert import send_twilio_alert
 
 
 def point_in_bbox(pt, bbox_xyxy):
@@ -52,7 +52,7 @@ class YOLOv8ThreatDetector:
     def __init__(
         self,
         weapon_model_path="C:\\Users\\shubh\\runs\\detect\\train19\\weights\\best.pt",
-        pose_model_name="yolov8n-pose.pt",
+        pose_model_name="C:\\Users\\shubh\\CCTV_THREAT_DETECTION\\yolov8n-pose.pt",
         conf_thr=0.4,
         device=None,
     ):
@@ -156,7 +156,7 @@ class YOLOv8ThreatDetector:
     def detect_threats(self, video_path, output_path="output_with_pose.mp4"):
         results = self.weapon_model(video_path, conf=self.conf_thr)
         cap = cv2.VideoCapture(video_path)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
         out = cv2.VideoWriter(output_path, fourcc, cap.get(cv2.CAP_PROP_FPS),
                               (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
@@ -227,11 +227,11 @@ class YOLOv8ThreatDetector:
             current_time = time.time()
             if high_threat_in_frame and (current_time - self.last_alert_time > self.cooldown_seconds):
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                send_telegram_alert("HIGH threat detected", timestamp)
+                send_twilio_alert("HIGH threat detected", timestamp)
                 self.last_alert_time = current_time
             elif medium_threat_in_frame and (current_time - self.last_alert_time > self.cooldown_seconds):
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                send_telegram_alert("MEDIUM threat detected", timestamp)
+                send_twilio_alert("MEDIUM threat detected", timestamp)
                 self.last_alert_time = current_time
 
             out.write(frame)
@@ -239,4 +239,14 @@ class YOLOv8ThreatDetector:
 
         cap.release()
         out.release()
-        return detected_classes
+        
+        # Aggregate alerts by counting occurrences of each threat type
+        alert_counts = {}
+        for threat_class in detected_classes:
+            alert_counts[threat_class] = alert_counts.get(threat_class, 0) + 1
+        
+        return {
+            "alerts": alert_counts,
+            "output_path": output_path,
+            "total_threats": len(detected_classes)
+        }

@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0A0A0A;
+  color: #e5e7eb;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.brand-font { font-family: 'Share Tech Mono', monospace; }
+.brand-glow { text-shadow: 0 0 8px rgba(168, 85, 247, 0.4); }
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+.animate-scan {
+  animation: scan 8s linear infinite;
+}
+.bg-radial-gradient {
+  background: radial-gradient(circle, transparent 20%, #020617 100%);
+}

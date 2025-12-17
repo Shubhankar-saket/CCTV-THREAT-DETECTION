@@ -1,25 +1,18 @@
-import smtplib
-
-import requests
+from twilio.rest import Client
 import os
 
-# Use environment variables or hardcode for testing
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7986120319:AAGQogy5kI6-BlqUM0NxS3qZnL1nqMkMXh4")  # replace with real token
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "1199854974")  # your personal chat ID
+SID = os.getenv("TWILIO_SID",  "AC4f7dd918bc6a747fc1df95efc0646c95")
+AUTH_TOKEN = os.getenv("TWILIO_TOKEN", "a04daa74191545b1f5072ed8fd2dce0f")
+FROM_NUMBER = os.getenv("TWILIO_FROM", "+16592225065") # e.g., +1234567890
+TO_NUMBER = os.getenv("USER_PHONE", "+916205582857")
 
-def send_telegram_alert(threat_type, timestamp, image_path=None):
-    message = f"🚨 *Threat Detected!*\n\n🧠 *Type:* `{threat_type}`\n🕒 *Time:* `{timestamp}`"
+def send_twilio_alert(threat_type, timestamp):
+    client = Client(SID, AUTH_TOKEN)
 
-    # Send text alert
-    send_text_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    requests.post(send_text_url, data={
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    })
+    message = f"🚨 VIGILENS ALERT: {threat_type} detected at {timestamp}. Check dashboard immediately."
 
-    # Optional: Send image if available
-    if image_path and os.path.exists(image_path):
-        send_photo_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-        with open(image_path, "rb") as img:
-            requests.post(send_photo_url, files={"photo": img}, data={"chat_id": CHAT_ID})
+    client.messages.create(
+        body=message,
+        from_=FROM_NUMBER,
+        to=TO_NUMBER
+    )
