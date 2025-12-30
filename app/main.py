@@ -120,6 +120,42 @@ async def upload_video(file: UploadFile = File(...)):
         "output_video": output_filename
     })
 
+@app.post("/process-frame")
+async def process_frame(file: UploadFile = File(...)):
+    """
+    Process a single frame from live camera feed.
+    Returns annotated frame and detected threats.
+    """
+    import cv2
+    import numpy as np
+    import base64
+    
+    try:
+        # Read the uploaded frame
+        contents = await file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            raise HTTPException(status_code=400, detail="Invalid image data")
+        
+        # Process the frame
+        result = detector.detect_threats_frame(frame)
+        
+        # Encode the annotated frame as base64
+        _, buffer = cv2.imencode('.jpg', result["annotated_frame"])
+        frame_base64 = base64.b64encode(buffer).decode('utf-8')
+        
+        return JSONResponse(content={
+            "annotated_frame": frame_base64,
+            "alerts": result["alerts"],
+            "total_threats": result["total_threats"]
+        })
+        
+    except Exception as e:
+        print(f"Frame processing error: {e}")
+        raise HTTPException(status_code=500, detail=f"Frame processing failed: {str(e)}")
+
 @app.get("/alerts")
 def get_alerts():
     """Returns the history of all detected alerts."""

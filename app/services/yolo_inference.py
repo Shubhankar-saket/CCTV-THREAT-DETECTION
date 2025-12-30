@@ -250,3 +250,83 @@ class YOLOv8ThreatDetector:
             "output_path": output_path,
             "total_threats": len(detected_classes)
         }
+
+    def detect_threats_frame(self, frame):
+        """
+        Process a single frame for threat detection (for live camera feed).
+        
+        Args:
+            frame: numpy array (BGR image from cv2 or similar)
+            
+        Returns:
+            dict with:
+                - annotated_frame: numpy array with drawings
+                - alerts: dict of threat types and counts
+                - total_threats: int
+        """
+        # Run weapon detection on the frame
+        weapon_results = self.weapon_model(frame, conf=self.conf_thr)[0]
+        
+        # Run pose detection
+        pose_res = self.pose_model(frame, conf=0.25, device=self.device)[0]
+        pose_persons = self._extract_pose_persons(pose_res)
+        pose_centers = [center_of_bbox(p["bbox"]) for p in pose_persons]
+        person_intents = ["None"] * len(pose_persons)
+        
+        # Extract weapons
+        weapons, _ = self._extract_weapons_and_people(weapon_results, self.weapon_model.names)
+        
+        detected_threats = []
+        
+        # Analyze weapons & intent
+        for w in weapons:
+            wbox = w["bbox"]
+            closest_idx, closest_dist = -1, float("inf")
+            w_center = center_of_bbox(wbox)
+            for i, p in enumerate(pose_persons):
+                d = np.linalg.norm(center_of_bbox(p["bbox"]) - w_center)
+                if d < closest_dist:
+                    closest_dist = d
+                    closest_idx = i
+            
+            in_hand, intent = False, None
+            other_centers = [c for j, c in enumerate(pose_centers) if j != closest_idx]
+            
+            if closest_idx != -1:
+                in_hand, intent = self._weapon_in_hand_and_intent(
+                    wbox, pose_persons[closest_idx], other_centers
+                )
+                person_intents[closest_idx] = intent if intent else "carrying"
+            
+            detected_threats.append(w["label"])
+            
+            # Draw weapon boxes
+            x1, y1, x2, y2 = map(int, wbox)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            cv2.putText(frame, f"{w['label']}", (x1, y1 - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+        
+        # Draw poses
+        if pose_res.keypoints is not None and len(pose_persons) > 0:
+            for i, kps in enumerate(pose_res.keypoints.xy.cpu().numpy()):
+                for x, y in kps:
+                    if x > 0 and y > 0:  # Only draw valid keypoints
+                        cv2.circle(frame, (int(x), int(y)), 4, (0, 255, 0), -1)
+                # Draw bounding box & threat level
+                if i < len(pose_persons):
+                    bbox = pose_persons[i]["bbox"]
+                    x1, y1, x2, y2 = map(int, bbox)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.putText(frame, person_intents[i].upper(), (x1, y1-10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+        
+        # Aggregate alerts
+        alert_counts = {}
+        for threat_class in detected_threats:
+            alert_counts[threat_class] = alert_counts.get(threat_class, 0) + 1
+        
+        return {
+            "annotated_frame": frame,
+            "alerts": alert_counts,
+            "total_threats": len(detected_threats)
+        }

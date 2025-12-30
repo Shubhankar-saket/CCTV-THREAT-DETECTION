@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import SecurityBackground from './components/SecurityBackground';
 import AuthForm from './components/AuthForm';
 import ScannerInterface from './components/ScannerInterface';
+import ModeSelection from './components/ModeSelection';
+import LiveFeedInterface from './components/LiveFeedInterface';
 
 // Layout Wrapper to ensure background stays behind everything
 const Layout = ({ children }) => (
@@ -26,13 +28,29 @@ function App() {
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<AuthForm initialMode="login" />} />
                 <Route path="/signup" element={<AuthForm initialMode="signup" />} />
-                <Route 
-                    path="/dashboard" 
+                <Route
+                    path="/mode-select"
+                    element={
+                        <ProtectedRoute>
+                            <ModeSelection />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/dashboard"
                     element={
                         <ProtectedRoute>
                             <ScannerInterface />
                         </ProtectedRoute>
-                    } 
+                    }
+                />
+                <Route
+                    path="/live-feed"
+                    element={
+                        <ProtectedRoute>
+                            <LiveFeedInterface />
+                        </ProtectedRoute>
+                    }
                 />
             </Routes>
         </Layout>
